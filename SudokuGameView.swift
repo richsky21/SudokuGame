@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SudokuGameView: View {
-    @StateObject var logic = SudokuLogic()
+    @StateObject private var logic = SudokuLogic() // ← private + StateObject
     @State private var isPlayer1Turn = true
     @State private var player1Time = 0, player2Time = 0
     
@@ -44,7 +44,7 @@ struct SudokuGameView: View {
 }
 
 struct GridBoardView: View {
-    @Binding var logic: SudokuLogic
+    @StateObject var logic: SudokuLogic // ← StateObject로 변경
     @Binding var isPlayer1Turn: Bool
     @Binding var player1Time: Int
     @Binding var player2Time: Int
@@ -62,9 +62,9 @@ struct GridBoardView: View {
                             get: { value },
                             set: { newValue in
                                 if isPlayer1Turn && value == 0 {
-                                    if logic.isValid(row: row, col: col, num: newValue) {
-                                        logic.board[row][col] = newValue
-                                        isPlayer1Turn.toggle()
+                                    if logic.isValid(row: row, col: col, value: newValue) {
+                                        logic.board[row][col] = newValue // 값 저장
+                                        isPlayer1Turn.toggle() // 차례 전환
                                     }
                                 }
                             }
