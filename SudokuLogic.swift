@@ -21,13 +21,13 @@ class SudokuLogic: ObservableObject {
         ]
     }
     
-    func isValid(row: Int, col: Int, num: Int) -> Bool {
+    func isValid(row: Int, col: Int, value: Int) -> Bool { // ← num → value로 변경
         for j in 0..<9 {
-            if board[row][j] == num { return false }
+            if board[row][j] == value { return false }
         }
         
         for i in 0..<9 {
-            if board[i][col] == num { return false }
+            if board[i][col] == value { return false }
         }
         
         let startRow = (row / 3) * 3
@@ -35,7 +35,7 @@ class SudokuLogic: ObservableObject {
         
         for i in startRow..<startRow + 3 {
             for j in startCol..<startCol + 3 {
-                if board[i][j] == num { return false }
+                if board[i][j] == value { return false }
             }
         }
         
@@ -45,7 +45,7 @@ class SudokuLogic: ObservableObject {
     func isSolved() -> Bool {
         for i in 0..<9 {
             for j in 0..<9 {
-                if board[i][j] == 0 || !isValid(row: i, col: j, num: board[i][j]) {
+                if board[i][j] == 0 || !isValid(row: i, col: j, value: board[i][j]) {
                     return false
                 }
             }
