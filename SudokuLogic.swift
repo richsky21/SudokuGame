@@ -1,7 +1,7 @@
 import Foundation
 
 class SudokuLogic: ObservableObject {
-    @Published var board = Array(repeating: Array(repeating: 0, count: 9), count: 9)
+    @Published var board = Array(repeating: Array(repeating: 0, count: 9), count: 9) // ← 이 부분 수정!
     
     init() {
         generatePuzzle()
@@ -21,7 +21,7 @@ class SudokuLogic: ObservableObject {
         ]
     }
     
-    func isValid(row: Int, col: Int, value: Int) -> Bool { // ← num → value로 변경
+    func isValid(row: Int, col: Int, value: Int) -> Bool {
         for j in 0..<9 {
             if board[row][j] == value { return false }
         }
@@ -47,13 +47,3 @@ class SudokuLogic: ObservableObject {
             for j in 0..<9 {
                 if board[i][j] == 0 || !isValid(row: i, col: j, value: board[i][j]) {
                     return false
-                }
-            }
-        }
-        return true
-    }
-    
-    func reset() {
-        generatePuzzle()
-    }
-}
