@@ -1,9 +1,11 @@
 import SwiftUI
 
 struct SudokuGameView: View {
-    @StateObject private var logic = SudokuLogic() // ← private + StateObject
+    @StateObject var logic = SudokuLogic()
     @State private var isPlayer1Turn = true
-    @State private var player1Time = 0, player2Time = 0
+    @State private var player1Time = 0
+    @State private var player2Time = 0
+    @State private var gameStatusMessage = ""
     
     var body: some View {
         VStack(spacing: 20) {
@@ -11,32 +13,41 @@ struct SudokuGameView: View {
                 .font(.title)
                 .fontWeight(.bold)
             
-            if isPlayer1Turn {
-                Text("플레이어 1 차례 (시간: $player1Time)s)")
-                    .foregroundColor(.blue)
-            } else {
-                Text("플레이어 2 차례 (시간: $player2Time)s)")
-                    .foregroundColor(.red)
+            VStack {
+                if isPlayer1Turn {
+                    Text("플레이어 1 차례 (시간: \(player1Time)s)")
+                        .foregroundColor(.blue)
+                } else {
+                    Text("플레이어 2 차례 (시간: \(player2Time)s)")
+                        .foregroundColor(.red)
+                }
             }
+            .font(.headline)
             
-            GridBoardView(logic: logic, isPlayer1Turn: $isPlayer1Turn, player1Time: $player1Time, player2Time: $player2Time)
+            GridBoardView(logic: logic, isPlayer1Turn: $isPlayer1Turn)
             
-            HStack {
+            Text(gameStatusMessage)
+                .foregroundColor(.orange)
+            
+            HStack(spacing: 20) {
                 Button("새 게임") {
                     logic.reset()
                     isPlayer1Turn = true
                     player1Time = 0
                     player2Time = 0
+                    gameStatusMessage = ""
                 }
+                .buttonStyle(.bordered)
                 
                 Button("승패 결정") {
                     if logic.isSolved() {
                         let winner = isPlayer1Turn ? "플레이어 1" : "플레이어 2"
-                        print("$winner) 승리!")
+                        gameStatusMessage = "\(winner) 승리!"
                     } else {
-                        print("아직 완성되지 않았습니다.")
+                        gameStatusMessage = "아직 완성되지 않았거나 틀린 곳이 있습니다."
                     }
                 }
+                .buttonStyle(.borderedProminent)
             }
         }
         .padding()
@@ -44,34 +55,31 @@ struct SudokuGameView: View {
 }
 
 struct GridBoardView: View {
-    @StateObject var logic: SudokuLogic // ← StateObject로 변경
+    @ObservedObject var logic: SudokuLogic
     @Binding var isPlayer1Turn: Bool
-    @Binding var player1Time: Int
-    @Binding var player2Time: Int
-    
-    let grid = Array(0..<9)
     
     var body: some View {
         VStack(spacing: 5) {
-            ForEach(grid, id: \.self) { row in
+            ForEach(0..<9, id: \.self) { row in
                 HStack(spacing: 5) {
-                    ForEach(grid, id: \.self) { col in
+                    ForEach(0..<9, id: \.self) { col in
                         let value = logic.board[row][col]
                         
                         TextField("", value: Binding<Int>(
-                            get: { value },
+                            get: { value == 0 ? 0 : value },
                             set: { newValue in
-                                if isPlayer1Turn && value == 0 {
-                                    if logic.isValid(row: row, col: col, value: newValue) {
-                                        logic.board[row][col] = newValue // 값 저장
-                                        isPlayer1Turn.toggle() // 차례 전환
-                                    }
+                                // 빈 칸일 때만 입력 가능하게 하거나, 자유롭게 수정 가능하게 로직 조정 가능
+                                if logic.isValid(row: row, col: col, num: newValue) {
+                                    logic.board[row][col] = newValue
+                                    isPlayer1Turn.toggle()
                                 }
                             }
-                        ))
+                        ), format: .number)
+                        .multilineTextAlignment(.center)
+                        .keyboardType(.numberPad)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .frame(width: 40, height: 40)
-                        .background(value == 0 ? Color.clear : Color.gray.opacity(0.2))
+                        .frame(width: 35, height: 35)
+                        .background(value == 0 ? Color.clear : Color.gray.opacity(0.1))
                     }
                 }
             }
